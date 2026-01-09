@@ -101,173 +101,169 @@ export default function App() {
     <main className="flex flex-col items-center justify-start min-h-screen bg-[#f0f2f5] p-4 font-sans text-slate-900 overflow-hidden">
       
       {/* Top Header & Counter */}
-      <div className="w-full max-w-md flex items-center justify-between py-4 px-2">
-        <div>
-          <h1 className="text-2xl font-black text-indigo-600 tracking-tight leading-none">SWIPEHIRE</h1>
-          <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Career Discovery</p>
-        </div>
-        <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl shadow-sm border border-slate-100">
-          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-          <span className="text-sm font-bold text-slate-700">{acceptedCount} Matches</span>
-        </div>
+      <div className="absolute top-4 right-4">
+      <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl shadow-sm border border-slate-100">
+        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+        <span className="text-sm font-bold text-slate-700">{acceptedCount} Matches</span>
+      </div>
       </div>
 
       {/* Main Container */}
-      <div className="relative w-full max-w-[360px] flex-1 flex items-center justify-center py-4">
-        <AnimatePresence mode="popLayout" custom={swipeDirection}>
-          {jobs.length > 0 ? (
-            jobs.map((job, index) => (
-              <JobCard 
-                key={job.id}
-                job={job}
-                isTop={index === currentIndex}
-                onSwipe={handleSwipe}
-                isInfoOpen={isInfoOpen}
-                custom={swipeDirection}
-              />
-            ))
-          ) : (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="text-center p-10 bg-white rounded-[2.5rem] shadow-xl border border-slate-200"
-            >
-              <div className="text-4xl mb-4">🎉</div>
-              <p className="text-slate-500 font-medium mb-4">You've seen all current listings!</p>
-              <button 
-                onClick={() => { setJobs(JOBS_DATA); setAcceptedCount(0); setHistory([]); }}
-                className="bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-indigo-700 transition-all active:scale-95"
-              >
-                Refresh Feed
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <div className="relative w-full max-w-[340px] flex-1 flex items-center justify-center py-4">
+      <AnimatePresence mode="popLayout" custom={swipeDirection}>
+        {jobs.length > 0 ? (
+        jobs.map((job, index) => (
+          <JobCard 
+          key={job.id}
+          job={job}
+          isTop={index === currentIndex}
+          onSwipe={handleSwipe}
+          isInfoOpen={isInfoOpen}
+          custom={swipeDirection}
+          />
+        ))
+        ) : (
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center p-10 bg-white rounded-[2.5rem] shadow-xl border border-slate-200"
+        >
+          <div className="text-4xl mb-4">🎉</div>
+          <p className="text-slate-500 font-medium mb-4">You've seen all current listings!</p>
+          <button 
+          onClick={() => { setJobs(JOBS_DATA); setAcceptedCount(0); setHistory([]); }}
+          className="bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-indigo-700 transition-all active:scale-95"
+          >
+          Refresh Feed
+          </button>
+        </motion.div>
+        )}
+      </AnimatePresence>
       </div>
 
       {/* Footer Controls */}
       <div className="w-full max-w-md flex items-center justify-evenly py-8 gap-2">
-        <button 
-          onClick={handleUndo}
-          disabled={history.length === 0 || isInfoOpen}
-          className="p-3 bg-white rounded-full shadow-md text-slate-400 hover:text-amber-500 hover:scale-110 active:scale-95 transition-all disabled:opacity-30"
-          aria-label="Undo"
-        >
-          <RotateCcw size={20} />
-        </button>
+      <button 
+        onClick={handleUndo}
+        disabled={history.length === 0 || isInfoOpen}
+        className="p-3 bg-white rounded-full shadow-md text-slate-400 hover:text-amber-500 hover:scale-110 active:scale-95 transition-all disabled:opacity-30"
+        aria-label="Undo"
+      >
+        <RotateCcw size={15} />
+      </button>
 
-        <button 
-          onClick={() => handleSwipe('left')}
-          disabled={isInfoOpen || jobs.length === 0}
-          className="p-5 bg-white rounded-full shadow-lg text-rose-500 hover:scale-110 active:scale-90 transition-all border border-slate-100 disabled:opacity-30"
-          aria-label="Pass"
-        >
-          <X size={32} strokeWidth={3} />
-        </button>
+      <button 
+        onClick={() => handleSwipe('left')}
+        disabled={isInfoOpen || jobs.length === 0}
+        className="p-5 bg-white rounded-full shadow-lg text-rose-500 hover:scale-110 active:scale-90 transition-all border border-slate-100 disabled:opacity-30"
+        aria-label="Pass"
+      >
+        <X size={22} strokeWidth={3} />
+      </button>
 
-        <button 
-          onClick={() => handleSwipe('right')}
-          disabled={isInfoOpen || jobs.length === 0}
-          className="p-5 bg-white rounded-full shadow-lg text-emerald-500 hover:scale-110 active:scale-90 transition-all border border-slate-100 disabled:opacity-30"
-          aria-label="Like"
-        >
-          <Check size={32} strokeWidth={3} />
-        </button>
+      <button 
+        onClick={() => handleSwipe('right')}
+        disabled={isInfoOpen || jobs.length === 0}
+        className="p-5 bg-white rounded-full shadow-lg text-emerald-500 hover:scale-110 active:scale-90 transition-all border border-slate-100 disabled:opacity-30"
+        aria-label="Like"
+      >
+        <Check size={22} strokeWidth={3} />
+      </button>
 
-        <button 
-          onClick={() => setIsInfoOpen(true)}
-          disabled={jobs.length === 0}
-          className="p-3 bg-white rounded-full shadow-md text-indigo-600 hover:scale-110 active:scale-95 transition-all border border-slate-100 disabled:opacity-30"
-          aria-label="More Info"
-        >
-          <Info size={24} strokeWidth={2.5} />
-        </button>
+      <button 
+        onClick={() => setIsInfoOpen(true)}
+        disabled={jobs.length === 0}
+        className="p-3 bg-white rounded-full shadow-md text-indigo-600 hover:scale-110 active:scale-95 transition-all border border-slate-100 disabled:opacity-30"
+        aria-label="More Info"
+      >
+        <Info size={15} strokeWidth={2.5} />
+      </button>
       </div>
 
       {/* Full Screen Information Panel */}
       <AnimatePresence>
-        {isInfoOpen && currentJob && (
+      {isInfoOpen && currentJob && (
           <motion.div
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: "spring", stiffness: 100, damping: 20 }}
-            className="fixed inset-0 z-[100] bg-white overflow-y-auto"
+            className="fixed top-0 right-0 bottom-0 left-0 md:left-64 z-[100] bg-white overflow-y-auto"
           >
-            <div className="relative">
-              {/* Info Header */}
-              <div className="sticky top-0 bg-white/80 backdrop-blur-md px-6 py-4 flex items-center justify-between border-b border-slate-100 z-10">
-                <button 
-                  onClick={() => setIsInfoOpen(false)}
-                  className="p-2 hover:bg-slate-100 rounded-full transition-colors"
-                >
-                  <ChevronLeft size={24} />
-                </button>
-                <h2 className="font-bold text-slate-800">Job Details</h2>
-                <div className="w-10" /> {/* Spacer */}
-              </div>
+        <div className="relative">
+          {/* Info Header */}
+          <div className="sticky top-0 bg-white/80 backdrop-blur-md px-6 py-4 flex items-center justify-between border-b border-slate-100 z-10">
+          <button 
+            onClick={() => setIsInfoOpen(false)}
+            className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+          >
+            <ChevronLeft size={24} />
+          </button>
+          <h2 className="font-bold text-slate-800">Job Details</h2>
+          <div className="w-10" /> {/* Spacer */}
+          </div>
 
-              {/* Info Content */}
-              <div className="p-8 max-w-2xl mx-auto">
-                <div className="flex flex-col items-center text-center mb-8">
-                  <div className="w-24 h-24 bg-indigo-50 rounded-3xl p-4 mb-4 shadow-inner">
-                    <img src={currentJob.logo} alt={currentJob.company} className="w-full h-full object-contain" />
-                  </div>
-                  <h3 className="text-3xl font-black text-slate-900">{currentJob.title}</h3>
-                  <p className="text-xl text-indigo-600 font-bold mb-2">{currentJob.company}</p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mb-8">
-                  <div className="bg-slate-50 p-4 rounded-2xl">
-                    <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Location</p>
-                    <div className="flex items-center gap-2 text-slate-700 font-semibold">
-                      <MapPin size={16} /> {currentJob.location}
-                    </div>
-                  </div>
-                  <div className="bg-slate-50 p-4 rounded-2xl">
-                    <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Salary Range</p>
-                    <div className="flex items-center gap-2 text-slate-700 font-semibold">
-                      <DollarSign size={16} /> {currentJob.salary}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mb-8">
-                  <h4 className="text-lg font-bold text-slate-900 mb-3">About the Role</h4>
-                  <p className="text-slate-600 leading-relaxed whitespace-pre-line">
-                    {currentJob.description}
-                  </p>
-                </div>
-
-                <div className="mb-10">
-                  <h4 className="text-lg font-bold text-slate-900 mb-3">Required Stack</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {currentJob.skills.map(s => (
-                      <span key={s} className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl text-sm font-bold border border-indigo-100">
-                        {s}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="space-y-4">
-                  <button className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-[0.98]">
-                    Apply with SwipeHire
-                  </button>
-                  <div className="flex gap-4">
-                    <a href={`mailto:${currentJob.email}`} className="flex-1 flex items-center justify-center gap-2 py-3 border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50 transition-colors">
-                      <Mail size={18} /> Email
-                    </a>
-                    <a href={`https://${currentJob.website}`} target="_blank" rel="noreferrer" className="flex-1 flex items-center justify-center gap-2 py-3 border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50 transition-colors">
-                      <Globe size={18} /> Website
-                    </a>
-                  </div>
-                </div>
-              </div>
+          {/* Info Content */}
+          <div className="p-8 max-w-2xl mx-auto">
+          <div className="flex flex-col items-center text-center mb-8">
+            <div className="w-24 h-24 bg-indigo-50 rounded-3xl p-4 mb-4 shadow-inner">
+            <img src={currentJob.logo} alt={currentJob.company} className="w-full h-full object-contain" />
             </div>
-          </motion.div>
-        )}
+            <h3 className="text-3xl font-black text-slate-900">{currentJob.title}</h3>
+            <p className="text-xl text-indigo-600 font-bold mb-2">{currentJob.company}</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mb-8">
+            <div className="bg-slate-50 p-4 rounded-2xl">
+            <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Location</p>
+            <div className="flex items-center gap-2 text-slate-700 font-semibold">
+              <MapPin size={16} /> {currentJob.location}
+            </div>
+            </div>
+            <div className="bg-slate-50 p-4 rounded-2xl">
+            <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Salary Range</p>
+            <div className="flex items-center gap-2 text-slate-700 font-semibold">
+              <DollarSign size={16} /> {currentJob.salary}
+            </div>
+            </div>
+          </div>
+
+          <div className="mb-8">
+            <h4 className="text-lg font-bold text-slate-900 mb-3">About the Role</h4>
+            <p className="text-slate-600 leading-relaxed whitespace-pre-line">
+            {currentJob.description}
+            </p>
+          </div>
+
+          <div className="mb-10">
+            <h4 className="text-lg font-bold text-slate-900 mb-3">Required Stack</h4>
+            <div className="flex flex-wrap gap-2">
+            {currentJob.skills.map(s => (
+              <span key={s} className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl text-sm font-bold border border-indigo-100">
+              {s}
+              </span>
+            ))}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="space-y-4">
+            <button className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-[0.98]">
+            Apply with SwipeHire
+            </button>
+            <div className="flex gap-4">
+            <a href={`mailto:${currentJob.email}`} className="flex-1 flex items-center justify-center gap-2 py-3 border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50 transition-colors">
+              <Mail size={18} /> Email
+            </a>
+            <a href={`https://${currentJob.website}`} target="_blank" rel="noreferrer" className="flex-1 flex items-center justify-center gap-2 py-3 border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50 transition-colors">
+              <Globe size={18} /> Website
+            </a>
+            </div>
+          </div>
+          </div>
+        </div>
+        </motion.div>
+      )}
       </AnimatePresence>
     </main>
   );

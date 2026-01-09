@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     const filename = file.name || 'resume';
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-
+    
     const tmpDir = os.tmpdir();
     const tmpPath = path.join(tmpDir, `resume_${Date.now()}_${filename}`);
     fs.writeFileSync(tmpPath, buffer);
