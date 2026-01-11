@@ -5,9 +5,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Compass, Heart, User, Briefcase, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext"; // add this
 
 const Navigation: React.FC = () => {
   const pathname = usePathname();
+  const { signOut } = useAuth(); // add this
 
   // Don't show navigation on login page or landing page
   if (pathname === "/" || pathname === "/login") {
@@ -15,6 +17,10 @@ const Navigation: React.FC = () => {
   }
 
   const isActive = (path: string) => pathname === path;
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-md border-b border-border">
@@ -34,11 +40,10 @@ const Navigation: React.FC = () => {
           <nav className="flex items-center gap-1">
             <Link
               href="/discovery"
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                isActive("/discovery")
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive("/discovery")
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
+                }`}
             >
               <Compass className="w-4 h-4" />
               <span className="hidden sm:inline">Discover</span>
@@ -46,11 +51,10 @@ const Navigation: React.FC = () => {
 
             <Link
               href="/matches"
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                isActive("/matches")
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive("/matches")
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
+                }`}
             >
               <Heart className="w-4 h-4" />
               <span className="hidden sm:inline">Matches</span>
@@ -58,11 +62,10 @@ const Navigation: React.FC = () => {
 
             <Link
               href="/profile"
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                isActive("/profile")
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive("/profile")
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
+                }`}
             >
               <User className="w-4 h-4" />
               <span className="hidden sm:inline">Profile</span>
@@ -71,7 +74,7 @@ const Navigation: React.FC = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => console.log("Signout clicked")}
+              onClick={handleSignOut}
               className="ml-2 text-muted-foreground hover:text-destructive"
             >
               <LogOut className="w-4 h-4" />
