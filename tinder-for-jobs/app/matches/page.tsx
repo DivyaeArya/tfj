@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, DollarSign, Briefcase, X, ExternalLink, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 export default function MatchesPage() {
   const [matches, setMatches] = useState<Job[]>([]);
@@ -52,6 +53,7 @@ export default function MatchesPage() {
   };
 
   return (
+    <ProtectedRoute>
     <div className="min-h-screen bg-background">
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
@@ -167,6 +169,7 @@ export default function MatchesPage() {
         )}
       </div>
     </div>
+    </ProtectedRoute>
   );
 }
 

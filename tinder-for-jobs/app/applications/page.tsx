@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 type Status = "accepted" | "pending" | "rejected";
 
@@ -48,51 +49,53 @@ export default function ApplicationsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 bg-white min-h-screen">
-      <h1 className="text-2xl font-semibold mb-6 text-black">Applications</h1>
+    <ProtectedRoute>
+      <div className="container mx-auto p-6 bg-white min-h-screen">
+        <h1 className="text-2xl font-semibold mb-6 text-black">Applications</h1>
 
-      {applications.length === 0 ? (
-        <div className="p-12 bg-white rounded-lg shadow text-center text-gray-600">
-          No applications yet.
-        </div>
-      ) : (
-        <div className="grid gap-4">
-          {applications.map((app) => (
-            <div
-              key={app.id}
-              className="p-4 bg-white rounded-lg shadow border flex items-start gap-4"
-            >
-              <img
-                src={app.logo || "/favicon.ico"}
-                alt={app.company}
-                className="w-16 h-16 rounded-md object-cover border"
-              />
+        {applications.length === 0 ? (
+          <div className="p-12 bg-white rounded-lg shadow text-center text-gray-600">
+            No applications yet.
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {applications.map((app) => (
+              <div
+                key={app.id}
+                className="p-4 bg-white rounded-lg shadow border flex items-start gap-4"
+              >
+                <img
+                  src={app.logo || "/favicon.ico"}
+                  alt={app.company}
+                  className="w-16 h-16 rounded-md object-cover border"
+                />
 
-              <div className="flex-1">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h2 className="text-lg font-semibold text-gray-900">{app.title}</h2>
-                    <p className="text-sm text-gray-600">{app.company} · {app.location}</p>
-                    {app.salary && (
-                      <div className="text-sm text-blue-600 font-semibold mt-1">{app.salary}</div>
-                    )}
+                <div className="flex-1">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h2 className="text-lg font-semibold text-gray-900">{app.title}</h2>
+                      <p className="text-sm text-gray-600">{app.company} · {app.location}</p>
+                      {app.salary && (
+                        <div className="text-sm text-blue-600 font-semibold mt-1">{app.salary}</div>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col items-end">
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${STATUS_CLASSES[app.status]}`}>
+                        {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
+                      </span>
+                      <span className="text-xs text-gray-500 mt-2">Applied {formatDate(app.appliedAt)}</span>
+                    </div>
                   </div>
 
-                  <div className="flex flex-col items-end">
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${STATUS_CLASSES[app.status]}`}>
-                      {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
-                    </span>
-                    <span className="text-xs text-gray-500 mt-2">Applied {formatDate(app.appliedAt)}</span>
-                  </div>
+                  {app?.logo && false}
                 </div>
-
-                {app?.logo && false}
               </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </ProtectedRoute>
   );
 }
 

@@ -12,6 +12,7 @@ import { DatabaseJob } from "@/lib/resumeApi";
 import { Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 export default function DiscoveryPage() {
   const router = useRouter();
@@ -209,6 +210,7 @@ export default function DiscoveryPage() {
   }
 
   return (
+    <ProtectedRoute>
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -294,5 +296,6 @@ export default function DiscoveryPage() {
         onPass={handlePassFromModal}
       />
     </div>
+    </ProtectedRoute>
   );
 }
