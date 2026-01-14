@@ -36,7 +36,9 @@ export function JobDetailsModal({ job, isOpen, onClose, onApply, onPass }: JobDe
 
   if (!job) return null;
 
-  const score = Math.round(job.score * 100);
+  const score = job.score && !isNaN(job.score) 
+    ? Math.round(job.score * 100)
+    : 0;
 
   // Determine score color
   const getScoreColor = (s: number) => {
@@ -119,7 +121,7 @@ export function JobDetailsModal({ job, isOpen, onClose, onApply, onPass }: JobDe
                     </div>
                     <div className="text-left">
                       <p className="text-[10px] uppercase text-muted-foreground font-semibold">Posted</p>
-                      <p className="text-sm font-medium">{formatDate(job.postedDate)}</p>
+                      <p className="text-sm font-medium">{formatDate(job.date_posted)}</p>
                     </div>
                   </div>
                 </div>
@@ -127,7 +129,7 @@ export function JobDetailsModal({ job, isOpen, onClose, onApply, onPass }: JobDe
                 <div className="mt-auto w-full space-y-3">
                   <Button
                     className="w-full h-12 text-base font-semibold shadow-lg shadow-blue-500/10"
-                    onClick={() => window.open("#", '_blank')}
+                    onClick={() => window.open(job.apply_link || "#", '_blank')}
                   >
                     <ExternalLink className="w-4 h-4 mr-2" />
                     Apply Now
@@ -162,7 +164,7 @@ export function JobDetailsModal({ job, isOpen, onClose, onApply, onPass }: JobDe
                   <div>
                     <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Skills & Tags</h4>
                     <div className="flex flex-wrap gap-2">
-                      {job.tags.map(tag => (
+                      {(job.tags ?? []).map(tag => (
                         <Badge key={tag} variant="secondary" className="px-3 py-1 text-xs sm:text-sm font-normal">
                           {tag}
                         </Badge>
@@ -176,7 +178,7 @@ export function JobDetailsModal({ job, isOpen, onClose, onApply, onPass }: JobDe
                   <div>
                     <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">About the Role</h4>
                     <div className="prose prose-slate dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line text-sm sm:text-base">
-                      {cleanDescription(job.description || "")}
+                      {cleanDescription(job.description_snippet || "")}
                     </div>
                   </div>
                 </div>

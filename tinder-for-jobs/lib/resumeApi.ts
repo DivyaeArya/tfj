@@ -43,16 +43,14 @@ export async function uploadResume(
 }
 
 export async function saveProfile(
-  jobDict: JobDict,
   token: string
 ): Promise<{ ranked_jobs: DatabaseJob[] }> {
   const res = await fetch(`${BACKEND_URL}/save-profile`, {
-    method: "POST",
+    method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(jobDict),
   });
 
   const data = await res.json();
@@ -60,4 +58,21 @@ export async function saveProfile(
     throw new Error(data.error || data.detail || "Failed to save profile");
   }
   return { ranked_jobs: data.ranked_jobs || [] };
+}
+
+export async function fetchUserProfile(
+  token: string
+): Promise<any> {
+  const res = await fetch(`${BACKEND_URL}/me`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || data.detail || "Failed to fetch user profile");
+  }
+  return data.data || {};
 }

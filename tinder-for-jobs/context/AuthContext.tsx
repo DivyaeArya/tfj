@@ -3,8 +3,10 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, onAuthStateChanged, signOut as firebaseSignOut } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth, firestore } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
+import { addDoc, collection } from "firebase/firestore";
+
 
 interface AuthContextType {
   user: User | null;
@@ -34,6 +36,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await firebaseSignOut(auth);
     router.push("/");
   };
+
+
+
+
+
 
   const getIdToken = async (forceRefresh = false) => {
     if (!auth.currentUser) return null;

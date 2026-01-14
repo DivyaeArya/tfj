@@ -121,7 +121,7 @@ export function AnimatedTags({ tags }: AnimatedTagsProps) {
       <div className="mt-3">
         <p className="text-xs font-medium text-muted-foreground mb-2">Common Ground</p>
         <div className="flex flex-wrap gap-1.5">
-          {tags.slice(0, 4).map((tag, index) => (
+          {(tags ?? []).slice(0, 4).map((tag, index) => (
             <motion.span
               key={tag}
               className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary text-[10px] font-medium rounded-full border border-primary/20 cursor-pointer"

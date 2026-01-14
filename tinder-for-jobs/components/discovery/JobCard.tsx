@@ -94,7 +94,9 @@ export function JobCard({ job, exitDirection, onSwipe, onViewDetails }: JobCardP
           {/* Match Score Badge */}
           <div className="flex flex-col items-center">
             <div className="w-12 h-12 rounded-full bg-success/10 border-2 border-success flex items-center justify-center">
-              <span className="text-sm font-bold text-success">{Math.round(job.score * 100)}%</span>
+              <span className="text-sm font-bold text-success">
+                {!isNaN(job.score) ? Math.round(job.score * 100) : '-'}%
+              </span>
             </div>
             <span className="text-xs text-muted-foreground mt-1">Match</span>
           </div>
@@ -102,15 +104,15 @@ export function JobCard({ job, exitDirection, onSwipe, onViewDetails }: JobCardP
 
         {/* Tags */}
         <div className="flex flex-wrap gap-2 mt-5 mb-5">
-          {job.tags.slice(0, 4).map((tag) => (
+          {(job.tags ?? []).slice(0, 4).map((tag) => (
             <Badge key={tag} variant="outline" className="bg-primary/10 text-primary border-primary/20">
               <Tag className="w-3 h-3 mr-1" />
               {tag}
             </Badge>
           ))}
-          {job.tags.length > 4 && (
+          {(job.tags ?? []).length > 4 && (
             <Badge variant="outline" className="bg-muted text-muted-foreground">
-              +{job.tags.length - 4}
+              +{(job.tags ?? []).length - 4}
             </Badge>
           )}
         </div>
@@ -123,7 +125,7 @@ export function JobCard({ job, exitDirection, onSwipe, onViewDetails }: JobCardP
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Clock className="w-4 h-4" />
-            <span>{formatDate(job.postedDate)}</span>
+            <span>{formatDate(job.date_posted)}</span>
           </div>
         </div>
 
@@ -131,7 +133,7 @@ export function JobCard({ job, exitDirection, onSwipe, onViewDetails }: JobCardP
         <div
           className="text-muted-foreground text-base line-clamp-3 mb-5"
           dangerouslySetInnerHTML={{
-            __html: (job.description || "").replace(/<[^>]*>/g, '').substring(0, 200) + '...'
+            __html: (job.description_snippet || "").replace(/<[^>]*>/g, '').substring(0, 200) + '...'
           }}
         />
 
