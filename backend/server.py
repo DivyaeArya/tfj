@@ -9,7 +9,7 @@ from groq import Groq
 from google import genai
 from sklearn.metrics.pairwise import cosine_similarity
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, Header, UploadFile, File, HTTPException
+from fastapi import Depends, FastAPI, Header, UploadFile, File, HTTPException,WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Any, Dict, List
@@ -21,15 +21,15 @@ load_dotenv()
 
 # Tesseract and Poppler paths
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-POPPLER_PATH = r"D:\Release-25.12.0-0\poppler-25.12.0\Library\bin"
-SYSTEM_PROMPT_PATH = r"D:\Codes\Job-recommender\system_prompt.txt"
-DATABASE_PATH = os.path.join(os.path.dirname(__file__), "data", "database_with_embeddings.json")
+POPPLER_PATH = r"C:\poppler\Release-25.12.0-0\poppler-25.12.0\Library\bin"
+SYSTEM_PROMPT_PATH = os.path.join(os.path.dirname(__file__),  "system_prompt.txt")
+# DATABASE_PATH = os.path.join(os.path.dirname(__file__), "data", "database_with_embeddings.json")
 
 app = FastAPI(title="Resume Parser & Job Recommendation API")
 
 cred = credentials.Certificate("C:\\Users\\ninad\\Downloads\\ppt-maker-7f813-firebase-adminsdk-fbsvc-facb0c310f.json")
 firebase_admin.initialize_app(cred)
-db=firestore.client()
+db = firestore.client()
 
 # Enable CORS for frontend
 app.add_middleware(
@@ -41,8 +41,8 @@ app.add_middleware(
 )
 
 # Pydantic models
-class SaveProfileRequest(BaseModel):
-    job_dict: Dict[str, Any]
+# class SaveProfileRequest(BaseModel):
+#     job_dict: Dict[str, Any]
 
 class RankedJob(BaseModel):
     id: str
@@ -152,37 +152,109 @@ def load_job_database() -> List[dict]:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Firestore error: {str(e)}")
 
+def compute_and_store_ranking(uid):
+    user_doc = db.collection("users").document(uid).get()
+    job_dict = user_doc.to_dict()["job_dict"]
 
-def rank_jobs_by_similarity(job_dict: dict, database: List[dict], top_k: int = 50) -> List[dict]:
-    """Rank jobs by cosine similarity to the job_dict embedding."""
-    # Create text representation of job_dict for embedding
+    database = load_job_database()
+    ranked_jobs = rank_jobs_by_similarity(job_dict, database, top_k=3000)
+
+    ranked_job_ids = [job["id"] for job in ranked_jobs]
+
+    db.collection("users").document(uid).update({
+        "ranked_job_ids": ranked_job_ids,
+        "ranking_updated_at": firestore.SERVER_TIMESTAMP
+    })
+
+
+def rank_jobs_by_similarity(
+    job_dict: dict,
+    database: List[dict],
+    top_k: int = 50,
+) -> List[dict]:
+    """
+    Rank jobs by cosine similarity between resume(job_dict)
+    and job embeddings stored in DB.
+    """
+
+    # 1️⃣ Embed the resume/job preference
     job_text = json.dumps(job_dict, sort_keys=True)
     query_embedding = create_embedding(job_text)
-    
+
     results = []
+
     for item in database:
-        if 'embedding' in item:
-            item_embedding = np.array(item['embedding']).reshape(1, -1)
-            score = cosine_similarity(query_embedding, item_embedding)[0][0]
-            
-            # Create job result without embedding (too large to send)
-            job_result = {
-                "id": item.get("id", ""),
-                "title": item.get("title", ""),
-                "company": item.get("company", ""),
-                "tags": item.get("tags", []),
-                "location": item.get("location", ""),
-                "date_posted": item.get("date_posted", ""),
-                "apply_link": item.get("apply_link", ""),
-                "description_snippet": item.get("description_snippet", ""),
-                "score": float(score)
-            }
-            results.append(job_result)
-    
-    # Sort by score descending and return top_k
-    results.sort(key=lambda x: x['score'], reverse=True)
+        embedding = item.get("embedding")
+        if not embedding:
+            continue  # skip jobs without embeddings
+
+        item_embedding = np.array(embedding).reshape(1, -1)
+        score = cosine_similarity(query_embedding, item_embedding)[0][0]
+
+        # 2️⃣ Build frontend-safe job object
+        job_result = {
+            "id": item.get("job_id", ""),                 # 🔑 correct id
+            "title": item.get("title", ""),
+            "company": item.get("company_name", item.get("via", "")),
+            "tags": item.get("tags", []),                 # may be empty
+            "location": item.get("location", ""),
+            "date_posted": item.get("date_posted", ""),   # optional
+            "apply_link": item.get("share_link", ""),
+            "description_snippet": (
+                item.get("description", "")[:300]         # 🔑 derive snippet
+            ),
+            "score": float(score),
+        }
+
+        results.append(job_result)
+
+    # 3️⃣ Sort by similarity score
+    results.sort(key=lambda x: x["score"], reverse=True)
+
     return results[:top_k]
 
+@app.websocket("/ws/jobs")
+async def jobs_ws(ws: WebSocket):
+    await ws.accept()
+
+    try:
+        token = ws.query_params.get("token")
+        if not token:
+            await ws.close(code=1008)
+            return
+
+        decoded = auth.verify_id_token(token)
+        uid = decoded["uid"]
+
+        # 2. Load user state (example)
+        user_ref = db.collection("users").document(uid)
+        user = user_ref.get().to_dict()
+
+        ranked_job_ids = user.get("ranked_job_ids", [])
+        count = user.get("count", 0)
+
+        while True:
+            data = json.loads(await ws.receive_text())
+
+            if data["type"] == "NEXT_JOB":
+                if count >= len(ranked_job_ids):
+                    await ws.send_json({ "type": "END" })
+                    continue
+
+                job_id = ranked_job_ids[count]
+                count += 1
+
+                doc = db.collection("jobs").document(job_id).get()
+                if doc.exists:
+                    await ws.send_json({
+                        "type": "JOB",
+                        "job": doc.to_dict() | {"id": job_id}
+                    })
+
+                user_ref.update({"count": count})
+
+    except WebSocketDisconnect:
+        print("Client disconnected")
 
 @app.post("/parse-resume")
 async def parse_resume(file: UploadFile = File(...),user: dict = Depends(get_current_user)):
@@ -219,6 +291,7 @@ async def parse_resume(file: UploadFile = File(...),user: dict = Depends(get_cur
                 "info_dict": info_dict,
                 "job_dict": job_dict,
                 "dynamic_keys": new_keys_tracker,
+                "count":0,
                 "updated_at": firestore.SERVER_TIMESTAMP,
             },
             merge=True,
@@ -239,9 +312,12 @@ async def parse_resume(file: UploadFile = File(...),user: dict = Depends(get_cur
         if os.path.exists(tmp_path):
             os.unlink(tmp_path)
 
+        # Compute and store ranking
+        compute_and_store_ranking(user["uid"])
 
-@app.post("/save-profile")
-async def save_profile(request: SaveProfileRequest):
+
+@app.get("/save-profile")
+async def save_profile(user: dict = Depends(get_current_user)):
     """
     Save profile and get ranked job recommendations.
     
@@ -249,21 +325,30 @@ async def save_profile(request: SaveProfileRequest):
     """
     try:
         # Load database
-        database = load_job_database()
-        
+        # database = load_job_database()
+        user_doc = db.collection("users").document(user["uid"]).get()
+        if not user_doc.exists:
+            raise HTTPException(status_code=404, detail="User data not found")
+        count=user_doc.to_dict().get("count",0)
         # Rank jobs by similarity
-        ranked_jobs = rank_jobs_by_similarity(request.job_dict, database)
-        
+        ranked_job_ids = user_doc.to_dict().get("ranked_job_ids", [])
+        #fetch only top 5 based on count*5
+        jobs_to_send = ranked_job_ids[count : count + 5]
+        #update count in firestore if jobs==1
+        # if jobs==1:
+        #     db.collection("users").document(user["uid"]).update({
+        #         "count": count + 1
+        #     })
+ 
         return {
             "success": True,
-            "ranked_jobs": ranked_jobs,
-            "total_jobs": len(ranked_jobs)
+            "ranked_jobs": jobs_to_send,
+            "total_jobs": len(ranked_job_ids)
         }
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
+    
 
 @app.get("/me")
 async def get_my_profile(user: dict = Depends(get_current_user)):

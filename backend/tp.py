@@ -15,8 +15,6 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 app = FastAPI(title="Auth Test API")
 
-
-
 cred = credentials.Certificate("C:\\Users\\ninad\\Downloads\\ppt-maker-7f813-firebase-adminsdk-fbsvc-facb0c310f.json")
 firebase_admin.initialize_app(cred)
 db=firestore.client()
@@ -87,7 +85,7 @@ async def parse_resume(
     with open(file_path, "wb") as f:
         f.write(await file.read())
 
-        
+
     return {
         "success": True,
         "uid": user["uid"],
